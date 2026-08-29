@@ -2,13 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Clock, ChevronLeft, ChevronRight, Bookmark, RotateCcw, Send, AlertTriangle } from 'lucide-react';
 
 export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
+  const durationMinutes = test?.duration_minutes || 45;
+
   const [currentIdx, setCurrentIdx] = useState(0);
   const [userAnswers, setUserAnswers] = useState({}); // { questionId: 'A' | 'B' | 'C' | 'D' }
   const [markedForReview, setMarkedForReview] = useState(new Set());
-  const [timeLeft, setTimeLeft] = useState((test.duration_minutes || 45) * 60);
+  const [timeLeft, setTimeLeft] = useState(durationMinutes * 60);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   
   const timerRef = useRef(null);
+
+  // Guard against missing test or questions payload
+  if (!test || !questions || questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#F7F9FC] flex items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm font-semibold text-dark">Loading MPSC AMVI Test Questions...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Real-time Countdown Timer
   useEffect(() => {
@@ -27,13 +41,14 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
   }, []);
 
   const handleAutoSubmit = () => {
-    onSubmitTest(userAnswers, (test.duration_minutes * 60) - timeLeft);
+    onSubmitTest(userAnswers, (durationMinutes * 60) - timeLeft);
   };
 
-  const currentQ = questions[currentIdx];
+  const currentQ = questions[currentIdx] || questions[0];
   const totalQuestions = questions.length;
 
   const handleOptionSelect = (opt) => {
+    if (!currentQ) return;
     setUserAnswers((prev) => ({
       ...prev,
       [currentQ.id]: opt
@@ -41,6 +56,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
   };
 
   const handleClearAnswer = () => {
+    if (!currentQ) return;
     setUserAnswers((prev) => {
       const copy = { ...prev };
       delete copy[currentQ.id];
@@ -49,6 +65,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
   };
 
   const toggleMarkForReview = () => {
+    if (!currentQ) return;
     setMarkedForReview((prev) => {
       const next = new Set(prev);
       if (next.has(currentQ.id)) {
@@ -82,7 +99,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
   const unansweredCount = totalQuestions - answeredCount;
 
   // Clean title removing the word 'Full' if present
-  const cleanTitle = (test.title || '').replace(/\s*Full\s*/i, ' ');
+  const cleanTitle = (test?.title || 'MPSC AMVI Mock Test').replace(/\s*Full\s*/i, ' ');
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] flex flex-col justify-between">
@@ -93,7 +110,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
             <div className="flex items-center gap-2">
               <span className="font-bold text-dark text-base md:text-lg">{cleanTitle}</span>
               <span className="text-xs bg-slate-100 text-dark-secondary px-2.5 py-0.5 rounded-full font-medium">
-                {test.difficulty}
+                {test?.difficulty || 'Standard'}
               </span>
             </div>
             <div className="text-xs text-dark-secondary flex items-center gap-3 mt-0.5">
@@ -137,21 +154,21 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
             {/* Section Tag */}
             <div className="flex flex-wrap justify-between items-center gap-2 pb-4 border-b border-slate-100">
               <span className="text-xs font-bold text-primary bg-primary-light px-3 py-1 rounded-lg">
-                {currentQ.section === 'POLITY_ECONOMICS_SCIENCE' 
+                {currentQ?.section === 'POLITY_ECONOMICS_SCIENCE' 
                   ? 'SECTION A — POLITY + ECONOMICS + SCIENCE' 
                   : 'SECTION B — MPSC / AMVI GENERAL + CURRENT AFFAIRS'}
               </span>
               <span className="text-xs font-medium text-dark-secondary">
-                Subject: <strong className="text-dark">{currentQ.subject}</strong> ({currentQ.topic})
+                Subject: <strong className="text-dark">{currentQ?.subject || 'General'}</strong> ({currentQ?.topic || 'Topic'})
               </span>
             </div>
 
             {/* Question Text */}
             <div className="space-y-3">
               <h2 className="text-base md:text-lg font-bold text-dark leading-relaxed">
-                Q{currentQ.question_no}. {(currentQ.question_en || '').replace(/\[Test \d+ - Q\d+\]\s*/i, '')}
+                Q{currentQ?.question_no || (currentIdx + 1)}. {(currentQ?.question_en || '').replace(/\[Test \d+ - Q\d+\]\s*/i, '')}
               </h2>
-              {lang === 'MR' && currentQ.question_mr && (
+              {lang === 'MR' && currentQ?.question_mr && (
                 <p className="text-sm font-medium text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
                   {currentQ.question_mr}
                 </p>
@@ -161,9 +178,9 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
             {/* Options List */}
             <div className="space-y-3 pt-2">
               {['A', 'B', 'C', 'D'].map((optKey) => {
-                const isSelected = userAnswers[currentQ.id] === optKey;
-                const optTextEn = currentQ[`option_${optKey.toLowerCase()}_en`];
-                const optTextMr = currentQ[`option_${optKey.toLowerCase()}_mr`];
+                const isSelected = userAnswers[currentQ?.id] === optKey;
+                const optTextEn = currentQ?.[`option_${optKey.toLowerCase()}_en`];
+                const optTextMr = currentQ?.[`option_${optKey.toLowerCase()}_mr`];
 
                 return (
                   <button
@@ -202,18 +219,18 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
               <button
                 onClick={toggleMarkForReview}
                 className={`px-4 py-2 text-xs font-semibold rounded-xl border transition flex items-center gap-1.5 ${
-                  markedForReview.has(currentQ.id)
+                  markedForReview.has(currentQ?.id)
                     ? 'bg-amber-100 text-amber-800 border-amber-300'
                     : 'bg-slate-50 text-dark-secondary border-slate-200 hover:bg-slate-100'
                 }`}
               >
                 <Bookmark className="w-3.5 h-3.5" />
-                {markedForReview.has(currentQ.id) ? 'Marked' : 'Mark for Review'}
+                {markedForReview.has(currentQ?.id) ? 'Marked' : 'Mark for Review'}
               </button>
 
               <button
                 onClick={handleClearAnswer}
-                disabled={!userAnswers[currentQ.id]}
+                disabled={!userAnswers[currentQ?.id]}
                 className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-dark-secondary text-xs font-semibold rounded-xl border border-slate-200 transition disabled:opacity-50 flex items-center gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />

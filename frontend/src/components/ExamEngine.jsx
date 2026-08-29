@@ -239,13 +239,22 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
                 <ChevronLeft className="w-3.5 h-3.5" /> Previous
               </button>
 
-              <button
-                onClick={() => setCurrentIdx((prev) => Math.min(totalQuestions - 1, prev + 1))}
-                disabled={currentIdx === totalQuestions - 1}
-                className="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-xl transition disabled:opacity-40 flex items-center gap-1"
-              >
-                Next <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              {/* On Question 45 (last question), display SUBMIT TEST button directly next to Next/Previous */}
+              {currentIdx === totalQuestions - 1 ? (
+                <button
+                  onClick={() => setShowSubmitModal(true)}
+                  className="px-4 py-1.5 bg-success hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-xs"
+                >
+                  <Send className="w-3.5 h-3.5" /> Submit Test
+                </button>
+              ) : (
+                <button
+                  onClick={() => setCurrentIdx((prev) => Math.min(totalQuestions - 1, prev + 1))}
+                  className="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-xl transition flex items-center gap-1"
+                >
+                  Next <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
         </div>

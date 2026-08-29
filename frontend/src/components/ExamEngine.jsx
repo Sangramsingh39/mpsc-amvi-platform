@@ -103,42 +103,34 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] flex flex-col justify-between">
-      {/* 1. Header Bar with Realtime Timer */}
-      <header className="bg-white border-b border-borderSoft sticky top-0 z-30 px-4 py-3 shadow-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      {/* 1. Compact Header Bar */}
+      <header className="bg-white border-b border-borderSoft sticky top-0 z-30 px-4 py-2 shadow-xs">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-dark text-base md:text-lg">{cleanTitle}</span>
-              <span className="text-xs bg-slate-100 text-dark-secondary px-2.5 py-0.5 rounded-full font-medium">
+              <span className="font-bold text-dark text-sm md:text-base">{cleanTitle}</span>
+              <span className="text-[10px] bg-slate-100 text-dark-secondary px-2 py-0.5 rounded-full font-medium">
                 {test?.difficulty || 'Standard'}
               </span>
             </div>
-            <div className="text-xs text-dark-secondary flex items-center gap-3 mt-0.5">
-              <span>Question {currentIdx + 1} of {totalQuestions}</span>
+            <div className="text-[11px] text-dark-secondary flex items-center gap-2 mt-0.5">
+              <span>Q {currentIdx + 1}/{totalQuestions}</span>
               <span>•</span>
               <span>Marks: 45</span>
             </div>
           </div>
 
-          {/* TOP RIGHT TIMER & SUBMIT BUTTON */}
-          <div className="flex items-center gap-3">
-            <div className={`px-4 py-2 rounded-xl border text-sm font-bold flex items-center gap-2 transition ${getTimerBadgeStyle()}`}>
-              <Clock className="w-4 h-4" />
-              <span>⏱ {formatTime(timeLeft)}</span>
+          {/* TOP RIGHT COMPACT SINGLE-CLOCK TIMER */}
+          <div className="flex items-center gap-2">
+            <div className={`px-3 py-1 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${getTimerBadgeStyle()}`}>
+              <Clock className="w-3.5 h-3.5 shrink-0" />
+              <span>{formatTime(timeLeft)}</span>
             </div>
-
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              className="px-4 py-2 bg-success hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-xs"
-            >
-              <Send className="w-3.5 h-3.5" />
-              Submit Test
-            </button>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-slate-100 h-1.5 mt-3 rounded-full overflow-hidden">
+        {/* Thin Progress Bar */}
+        <div className="w-full bg-slate-100 h-1 mt-1.5 rounded-full overflow-hidden">
           <div
             className="bg-primary h-full transition-all duration-300"
             style={{ width: `${((currentIdx + 1) / totalQuestions) * 100}%` }}
@@ -147,36 +139,36 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
       </header>
 
       {/* Main Examination Grid Layout */}
-      <main className="max-w-7xl mx-auto w-full px-4 py-6 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <main className="max-w-7xl mx-auto w-full px-4 py-4 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Section: Question Card */}
-        <div className="lg:col-span-3 space-y-6 flex flex-col justify-between">
-          <div className="bg-white p-6 rounded-2xl border border-borderSoft shadow-xs space-y-6">
+        <div className="lg:col-span-3 space-y-4 flex flex-col justify-between">
+          <div className="bg-white p-5 rounded-2xl border border-borderSoft shadow-xs space-y-5">
             {/* Section Tag */}
-            <div className="flex flex-wrap justify-between items-center gap-2 pb-4 border-b border-slate-100">
-              <span className="text-xs font-bold text-primary bg-primary-light px-3 py-1 rounded-lg">
+            <div className="flex flex-wrap justify-between items-center gap-2 pb-3 border-b border-slate-100">
+              <span className="text-[11px] font-bold text-primary bg-primary-light px-2.5 py-0.5 rounded-md">
                 {currentQ?.section === 'POLITY_ECONOMICS_SCIENCE' 
                   ? 'SECTION A — POLITY + ECONOMICS + SCIENCE' 
                   : 'SECTION B — MPSC / AMVI GENERAL + CURRENT AFFAIRS'}
               </span>
-              <span className="text-xs font-medium text-dark-secondary">
+              <span className="text-[11px] font-medium text-dark-secondary">
                 Subject: <strong className="text-dark">{currentQ?.subject || 'General'}</strong> ({currentQ?.topic || 'Topic'})
               </span>
             </div>
 
             {/* Question Text */}
-            <div className="space-y-3">
-              <h2 className="text-base md:text-lg font-bold text-dark leading-relaxed">
+            <div className="space-y-2">
+              <h2 className="text-sm md:text-base font-bold text-dark leading-relaxed">
                 Q{currentQ?.question_no || (currentIdx + 1)}. {(currentQ?.question_en || '').replace(/\[Test \d+ - Q\d+\]\s*/i, '')}
               </h2>
               {lang === 'MR' && currentQ?.question_mr && (
-                <p className="text-sm font-medium text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <p className="text-xs font-medium text-slate-700 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                   {currentQ.question_mr}
                 </p>
               )}
             </div>
 
             {/* Options List */}
-            <div className="space-y-3 pt-2">
+            <div className="space-y-2.5 pt-1">
               {['A', 'B', 'C', 'D'].map((optKey) => {
                 const isSelected = userAnswers[currentQ?.id] === optKey;
                 const optTextEn = currentQ?.[`option_${optKey.toLowerCase()}_en`];
@@ -186,14 +178,14 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
                   <button
                     key={optKey}
                     onClick={() => handleOptionSelect(optKey)}
-                    className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3 ${
+                    className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 ${
                       isSelected
                         ? 'border-primary bg-primary-light/50 text-dark shadow-xs'
                         : 'border-slate-200 bg-white hover:bg-slate-50 text-dark'
                     }`}
                   >
                     <div
-                      className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5 ${
                         isSelected
                           ? 'border-primary bg-primary text-white'
                           : 'border-slate-300 text-dark-secondary'
@@ -201,10 +193,10 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
                     >
                       {optKey}
                     </div>
-                    <div className="text-sm">
+                    <div className="text-xs md:text-sm">
                       <div className="font-semibold text-dark">{optTextEn}</div>
                       {lang === 'MR' && optTextMr && (
-                        <div className="text-xs text-slate-600 mt-0.5">{optTextMr}</div>
+                        <div className="text-[11px] text-slate-600 mt-0.5">{optTextMr}</div>
                       )}
                     </div>
                   </button>
@@ -214,11 +206,11 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
           </div>
 
           {/* Action Toolbar */}
-          <div className="bg-white p-4 rounded-2xl border border-borderSoft flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-white p-3 rounded-2xl border border-borderSoft flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleMarkForReview}
-                className={`px-4 py-2 text-xs font-semibold rounded-xl border transition flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition flex items-center gap-1.5 ${
                   markedForReview.has(currentQ?.id)
                     ? 'bg-amber-100 text-amber-800 border-amber-300'
                     : 'bg-slate-50 text-dark-secondary border-slate-200 hover:bg-slate-100'
@@ -231,57 +223,57 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
               <button
                 onClick={handleClearAnswer}
                 disabled={!userAnswers[currentQ?.id]}
-                className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-dark-secondary text-xs font-semibold rounded-xl border border-slate-200 transition disabled:opacity-50 flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-dark-secondary text-xs font-semibold rounded-xl border border-slate-200 transition disabled:opacity-50 flex items-center gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Clear Answer
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
                 disabled={currentIdx === 0}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-dark text-xs font-semibold rounded-xl transition disabled:opacity-40 flex items-center gap-1"
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-dark text-xs font-semibold rounded-xl transition disabled:opacity-40 flex items-center gap-1"
               >
-                <ChevronLeft className="w-4 h-4" /> Previous
+                <ChevronLeft className="w-3.5 h-3.5" /> Previous
               </button>
 
               <button
                 onClick={() => setCurrentIdx((prev) => Math.min(totalQuestions - 1, prev + 1))}
                 disabled={currentIdx === totalQuestions - 1}
-                className="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-xl transition disabled:opacity-40 flex items-center gap-1"
+                className="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-xl transition disabled:opacity-40 flex items-center gap-1"
               >
-                Next <ChevronRight className="w-4 h-4" />
+                Next <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right / Below Section: Question Navigation Panel (ALWAYS VISIBLE ON ALL DEVICES) */}
-        <div className="bg-white p-5 rounded-2xl border border-borderSoft space-y-4">
-          <h3 className="font-bold text-dark text-sm border-b border-slate-100 pb-3">
+        {/* Right / Below Section: Question Navigation Panel */}
+        <div className="bg-white p-4 rounded-2xl border border-borderSoft space-y-3">
+          <h3 className="font-bold text-dark text-xs border-b border-slate-100 pb-2">
             Question Palette ({answeredCount}/{totalQuestions} Answered)
           </h3>
 
           {/* Status Legend */}
-          <div className="grid grid-cols-2 gap-2 text-xs font-medium text-dark-secondary">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-slate-200 inline-block"></span> Unanswered
+          <div className="grid grid-cols-2 gap-1.5 text-[11px] font-medium text-dark-secondary">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-200 inline-block"></span> Unanswered
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-success inline-block"></span> Answered
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-success inline-block"></span> Answered
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> Marked
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Marked
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-primary inline-block"></span> Current
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span> Current
             </div>
           </div>
 
           {/* Question Grid */}
-          <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2 pt-2 max-h-[360px] overflow-y-auto pr-1">
+          <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-1.5 pt-1 max-h-[340px] overflow-y-auto pr-1">
             {questions.map((q, idx) => {
               const isAns = !!userAnswers[q.id];
               const isMarked = markedForReview.has(q.id);
@@ -300,7 +292,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
                 <button
                   key={q.id}
                   onClick={() => setCurrentIdx(idx)}
-                  className={`h-9 rounded-xl text-xs flex items-center justify-center transition ${bgStyle}`}
+                  className={`h-8 rounded-lg text-xs flex items-center justify-center transition ${bgStyle}`}
                 >
                   {idx + 1}
                 </button>
@@ -308,10 +300,10 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
             })}
           </div>
 
-          <div className="pt-3 border-t border-slate-100">
+          <div className="pt-2 border-t border-slate-100">
             <button
               onClick={() => setShowSubmitModal(true)}
-              className="w-full py-3 bg-success hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 bg-success hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs"
             >
               <Send className="w-3.5 h-3.5" /> Submit Test
             </button>

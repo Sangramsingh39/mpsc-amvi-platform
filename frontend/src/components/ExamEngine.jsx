@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Clock, ChevronLeft, ChevronRight, Bookmark, RotateCcw, Send, AlertTriangle, Menu, X } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, Bookmark, RotateCcw, Send, AlertTriangle } from 'lucide-react';
 
 export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -7,7 +7,6 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
   const [markedForReview, setMarkedForReview] = useState(new Set());
   const [timeLeft, setTimeLeft] = useState((test.duration_minutes || 45) * 60);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   
   const timerRef = useRef(null);
 
@@ -61,7 +60,6 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
     });
   };
 
-  // Timer Color logic based on prompt requirements
   const getTimerBadgeStyle = () => {
     const minutesLeft = timeLeft / 60;
     if (minutesLeft <= 3) {
@@ -83,6 +81,9 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
   const markedCount = markedForReview.size;
   const unansweredCount = totalQuestions - answeredCount;
 
+  // Clean title removing the word 'Full' if present
+  const cleanTitle = (test.title || '').replace(/\s*Full\s*/i, ' ');
+
   return (
     <div className="min-h-screen bg-[#F7F9FC] flex flex-col justify-between">
       {/* 1. Header Bar with Realtime Timer */}
@@ -90,7 +91,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-dark text-base md:text-lg">{test.title}</span>
+              <span className="font-bold text-dark text-base md:text-lg">{cleanTitle}</span>
               <span className="text-xs bg-slate-100 text-dark-secondary px-2.5 py-0.5 rounded-full font-medium">
                 {test.difficulty}
               </span>
@@ -102,24 +103,16 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
             </div>
           </div>
 
-          {/* TOP RIGHT TIMER */}
+          {/* TOP RIGHT TIMER & SUBMIT BUTTON */}
           <div className="flex items-center gap-3">
             <div className={`px-4 py-2 rounded-xl border text-sm font-bold flex items-center gap-2 transition ${getTimerBadgeStyle()}`}>
               <Clock className="w-4 h-4" />
               <span>⏱ {formatTime(timeLeft)}</span>
             </div>
 
-            {/* Mobile Drawer Toggle */}
-            <button
-              onClick={() => setDrawerOpen(!drawerOpen)}
-              className="lg:hidden p-2 bg-slate-100 rounded-xl text-dark"
-            >
-              {drawerOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
             <button
               onClick={() => setShowSubmitModal(true)}
-              className="hidden lg:flex px-4 py-2 bg-success hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition items-center gap-1.5"
+              className="px-4 py-2 bg-success hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-xs"
             >
               <Send className="w-3.5 h-3.5" />
               Submit Test
@@ -142,7 +135,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
         <div className="lg:col-span-3 space-y-6 flex flex-col justify-between">
           <div className="bg-white p-6 rounded-2xl border border-borderSoft shadow-xs space-y-6">
             {/* Section Tag */}
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+            <div className="flex flex-wrap justify-between items-center gap-2 pb-4 border-b border-slate-100">
               <span className="text-xs font-bold text-primary bg-primary-light px-3 py-1 rounded-lg">
                 {currentQ.section === 'POLITY_ECONOMICS_SCIENCE' 
                   ? 'SECTION A — POLITY + ECONOMICS + SCIENCE' 
@@ -156,7 +149,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
             {/* Question Text */}
             <div className="space-y-3">
               <h2 className="text-base md:text-lg font-bold text-dark leading-relaxed">
-                Q{currentQ.question_no}. {currentQ.question_en}
+                Q{currentQ.question_no}. {(currentQ.question_en || '').replace(/\[Test \d+ - Q\d+\]\s*/i, '')}
               </h2>
               {lang === 'MR' && currentQ.question_mr && (
                 <p className="text-sm font-medium text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
@@ -248,8 +241,8 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
           </div>
         </div>
 
-        {/* Right Section: Question Navigation Panel */}
-        <div className={`lg:block ${drawerOpen ? 'block' : 'hidden'} bg-white p-5 rounded-2xl border border-borderSoft space-y-4`}>
+        {/* Right / Below Section: Question Navigation Panel (ALWAYS VISIBLE ON ALL DEVICES) */}
+        <div className="bg-white p-5 rounded-2xl border border-borderSoft space-y-4">
           <h3 className="font-bold text-dark text-sm border-b border-slate-100 pb-3">
             Question Palette ({answeredCount}/{totalQuestions} Answered)
           </h3>
@@ -271,7 +264,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
           </div>
 
           {/* Question Grid */}
-          <div className="grid grid-cols-5 gap-2 pt-2 max-h-[360px] overflow-y-auto pr-1">
+          <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2 pt-2 max-h-[360px] overflow-y-auto pr-1">
             {questions.map((q, idx) => {
               const isAns = !!userAnswers[q.id];
               const isMarked = markedForReview.has(q.id);
@@ -289,10 +282,7 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
               return (
                 <button
                   key={q.id}
-                  onClick={() => {
-                    setCurrentIdx(idx);
-                    setDrawerOpen(false);
-                  }}
+                  onClick={() => setCurrentIdx(idx)}
                   className={`h-9 rounded-xl text-xs flex items-center justify-center transition ${bgStyle}`}
                 >
                   {idx + 1}
@@ -301,12 +291,12 @@ export default function ExamEngine({ test, questions, onSubmitTest, lang }) {
             })}
           </div>
 
-          <div className="pt-4 border-t border-slate-100 lg:hidden">
+          <div className="pt-3 border-t border-slate-100">
             <button
               onClick={() => setShowSubmitModal(true)}
-              className="w-full py-2.5 bg-success text-white text-xs font-semibold rounded-xl"
+              className="w-full py-3 bg-success hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5"
             >
-              Submit Test Now
+              <Send className="w-3.5 h-3.5" /> Submit Test
             </button>
           </div>
         </div>

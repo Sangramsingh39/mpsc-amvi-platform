@@ -1,0 +1,12 @@
+{
+  "name": "mpsc-amvi-platform-root",
+  "version": "1.0.0",
+  "description": "MPSC AMVI Group-C Online Mock Test Platform (100 Tests, 4,500+ Questions)",
+  "main": "backend/src/server.js",
+  "type": "module",
+  "scripts": {
+    "seed": "node backend/src/seeder.js",
+    "build": "npm --prefix frontend run build",
+    "start": "node backend/src/server.js"
+  }
+}
